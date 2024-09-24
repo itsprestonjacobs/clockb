@@ -22,6 +22,7 @@
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            width: 300px;
         }
 
         .clock {
@@ -29,18 +30,55 @@
             color: #333;
             margin-bottom: 20px;
         }
+
+        .tab {
+            display: none;
+        }
+
+        .tab.active {
+            display: block;
+        }
+
+        .tabs {
+            margin-bottom: 20px;
+        }
+
+        button {
+            margin: 5px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="clock" id="clock"></div>
-        <input type="file" id="backgroundInput" accept="image/*">
-        <button id="resetBackground">Reset Background</button>
+        <div class="tabs">
+            <button onclick="showTab('backgroundTab')">Change Background</button>
+            <button onclick="showTab('timezoneTab')">Change Time Zone</button>
+        </div>
+        
+        <div id="backgroundTab" class="tab active">
+            <input type="file" id="backgroundInput" accept="image/*">
+            <button id="resetBackground">Reset Background</button>
+        </div>
+
+        <div id="timezoneTab" class="tab">
+            <select id="timezoneSelect">
+                <option value="UTC">UTC</option>
+                <option value="America/New_York">Eastern Time (ET)</option>
+                <option value="America/Chicago">Central Time (CT)</option>
+                <option value="America/Denver">Mountain Time (MT)</option>
+                <option value="America/Los_Angeles">Pacific Time (PT)</option>
+                <option value="Europe/London">London</option>
+                <option value="Asia/Tokyo">Tokyo</option>
+            </select>
+        </div>
     </div>
     <script>
+        let currentTimezone = 'UTC';
+
         function updateClock() {
-            const now = new Date();
-            const timeString = now.toLocaleTimeString();
+            const now = new Date().toLocaleString("en-US", { timeZone: currentTimezone });
+            const timeString = new Date(now).toLocaleTimeString();
             document.getElementById('clock').textContent = timeString;
         }
 
@@ -61,8 +99,19 @@
             document.body.style.backgroundImage = '';
         }
 
+        function showTab(tabId) {
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.getElementById(tabId).classList.add('active');
+        }
+
         document.getElementById('backgroundInput').addEventListener('change', setBackground);
         document.getElementById('resetBackground').addEventListener('click', resetBackground);
+        document.getElementById('timezoneSelect').addEventListener('change', function() {
+            currentTimezone = this.value;
+        });
+
         setInterval(updateClock, 1000);
         updateClock(); // Initialize clock on load
     </script>
