@@ -52,54 +52,71 @@
         .admin-panel {
             margin-top: 20px;
         }
+
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="clock" id="clock"></div>
-        <div class="tabs">
-            <button onclick="showTab('backgroundTab')">Change Background</button>
-            <button onclick="showTab('timezoneTab')">Change Time Zone</button>
-            <button onclick="showTab('adminTab')">Admin Panel</button>
-        </div>
-        
-        <div id="backgroundTab" class="tab active">
-            <input type="file" id="backgroundInput" accept="image/*">
-            <button id="resetBackground">Reset Background</button>
+    <div class="container" id="mainContainer">
+        <div id="loginTab">
+            <h2>Login</h2>
+            <input type="text" id="usernameInput" placeholder="Username">
+            <button id="loginButton">Login</button>
+            <p id="loginStatus" style="color:red;"></p>
         </div>
 
-        <div id="timezoneTab" class="tab">
-            <select id="timezoneSelect">
-                <option value="UTC">UTC</option>
-                <option value="America/New_York">Eastern Time (ET)</option>
-                <option value="America/Chicago">Central Time (CT)</option>
-                <option value="America/Denver">Mountain Time (MT)</option>
-                <option value="America/Los_Angeles">Pacific Time (PT)</option>
-                <option value="Europe/London">London</option>
-                <option value="Asia/Tokyo">Tokyo</option>
-            </select>
-        </div>
+        <div id="appTab" class="hidden">
+            <div class="clock" id="clock"></div>
+            <div class="tabs">
+                <button onclick="showTab('backgroundTab')">Change Background</button>
+                <button onclick="showTab('timezoneTab')">Change Time Zone</button>
+                <button onclick="showTab('adminTab')">Admin Panel</button>
+            </div>
+            
+            <div id="backgroundTab" class="tab active">
+                <input type="file" id="backgroundInput" accept="image/*">
+                <button id="resetBackground">Reset Background</button>
+            </div>
 
-        <div id="adminTab" class="tab hidden">
-            <input type="password" id="adminPassword" placeholder="Enter Admin Password">
-            <input type="text" id="banUserInput" placeholder="Username to ban" disabled>
-            <button id="banUser" disabled>Ban User</button>
-            <input type="text" id="unbanUserInput" placeholder="Username to unban" disabled>
-            <button id="unbanUser" disabled>Unban User</button>
-            <p id="banStatus" style="color:red;"></p>
+            <div id="timezoneTab" class="tab">
+                <select id="timezoneSelect">
+                    <option value="UTC">UTC</option>
+                    <option value="America/New_York">Eastern Time (ET)</option>
+                    <option value="America/Chicago">Central Time (CT)</option>
+                    <option value="America/Denver">Mountain Time (MT)</option>
+                    <option value="America/Los_Angeles">Pacific Time (PT)</option>
+                    <option value="Europe/London">London</option>
+                    <option value="Asia/Tokyo">Tokyo</option>
+                </select>
+            </div>
+
+            <div id="adminTab" class="tab hidden">
+                <input type="password" id="adminPassword" placeholder="Enter Admin Password">
+                <input type="text" id="banUserInput" placeholder="Username to ban" disabled>
+                <button id="banUser" disabled>Ban User</button>
+                <input type="text" id="unbanUserInput" placeholder="Username to unban" disabled>
+                <button id="unbanUser" disabled>Unban User</button>
+                <p id="banStatus" style="color:red;"></p>
+            </div>
         </div>
     </div>
     <script>
         let currentTimezone = 'UTC';
         let bannedUsers = [];
         const adminPassword = '3912';
-        const currentUser = "user123"; // Example current username
+        let currentUser = ''; // To store the current username
 
         // Load saved background from local storage
         window.onload = function() {
             const savedBackground = localStorage.getItem('backgroundImage');
             if (savedBackground) {
                 document.body.style.backgroundImage = `url(${savedBackground})`;
+            }
+            currentUser = localStorage.getItem('currentUser');
+            if (currentUser) {
+                showApp();
             }
             setInterval(updateClock, 1000);
             updateClock(); // Initialize clock on load
@@ -116,6 +133,24 @@
                 document.body.innerHTML = ""; // Clear the content
             }
         }
+
+        function showApp() {
+            document.getElementById('loginTab').classList.add('hidden');
+            document.getElementById('appTab').classList.remove('hidden');
+            document.getElementById('clock').textContent = ""; // Reset clock display
+        }
+
+        document.getElementById('loginButton').addEventListener('click', function() {
+            const username = document.getElementById('usernameInput').value;
+            if (username) {
+                currentUser = username;
+                localStorage.setItem('currentUser', username);
+                document.getElementById('loginStatus').textContent = '';
+                showApp();
+            } else {
+                document.getElementById('loginStatus').textContent = 'Please enter a username.';
+            }
+        });
 
         function setBackground(event) {
             const file = event.target.files[0];
@@ -138,18 +173,7 @@
             document.querySelectorAll('.tab').forEach(tab => {
                 tab.classList.remove('active');
             });
-            const adminTab = document.getElementById('adminTab');
-            if (tabId === 'adminTab') {
-                adminTab.classList.add('active');
-                document.getElementById('adminPassword').value = '';
-                document.getElementById('banUserInput').disabled = true;
-                document.getElementById('unbanUserInput').disabled = true;
-                document.getElementById('banUser').disabled = true;
-                document.getElementById('unbanUser').disabled = true;
-                document.getElementById('banStatus').textContent = '';
-            } else {
-                document.getElementById(tabId).classList.add('active');
-            }
+            document.getElementById(tabId).classList.add('active');
         }
 
         document.getElementById('adminPassword').addEventListener('input', function() {
@@ -193,4 +217,3 @@
     </script>
 </body>
 </html>
-
