@@ -49,10 +49,6 @@
             margin: 5px;
         }
 
-        .admin-panel {
-            margin-top: 20px;
-        }
-
         .hidden {
             display: none;
         }
@@ -118,9 +114,16 @@
             if (currentUser) {
                 showApp();
             }
+            logUserActivity("opened");
             setInterval(updateClock, 1000);
             updateClock(); // Initialize clock on load
         };
+
+        // Log user activity
+        function logUserActivity(action) {
+            const timestamp = new Date().toISOString();
+            console.log(`User: ${currentUser}, Action: ${action}, Time: ${timestamp}`);
+        }
 
         function updateClock() {
             const now = new Date().toLocaleString("en-US", { timeZone: currentTimezone });
@@ -214,6 +217,10 @@
             currentTimezone = this.value;
         });
 
+        // Log user activity when closing the tab
+        window.addEventListener('beforeunload', function() {
+            logUserActivity("closed");
+        });
     </script>
 </body>
 </html>
