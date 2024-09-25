@@ -1,1 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Clock</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            background-size: cover;
+            background-position: center;
+            font-family: 'Arial', sans-serif;
+            transition: background-image 0.5s;
+        }
+
+        .container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            width: 300px;
+        }
+
+        .clock {
+            font-size: 4rem;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            display: none;
+        }
+
+        .tab.active {
+            display: block;
+        }
+
+        .tabs {
+            margin-bottom: 20px;
+        }
+
+        button {
+            margin: 5px;
+        }
+
+        .admin-panel {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="clock" id="clock"></div>
+        <div class="tabs">
+            <button onclick="showTab('backgroundTab')">Change Background</button>
+            <button onclick="showTab('timezoneTab')">Change Time Zone</button>
+            <button onclick="showTab('adminTab')">Admin Panel</button>
+        </div>
+        
+        <div id="backgroundTab" class="tab active">
+            <input type="file" id="backgroundInput" accept="image/*">
+            <button id="resetBackground">Reset Background</button>
+        </div>
+
+        <div id="timezoneTab" class="tab">
+            <select id="timezoneSelect">
+                <option value="UTC">UTC</option>
+                <option value="America/New_York">Eastern Time (ET)</option>
+                <option value="America/Chicago">Central Time (CT)</option>
+                <option value="America/Denver">Mountain Time (MT)</option>
+                <option value="America/Los_Angeles">Pacific Time (PT)</option>
+                <option value="Europe/London">London</option>
+                <option value="Asia/Tokyo">Tokyo</option>
+            </select>
+        </div>
+
+        <div id="adminTab" class="tab hidden">
+            <input type="password" id="adminPassword" placeholder="Enter Admin Password">
+            <input type="text" id="banUserInput" placeholder="Username to ban" disabled>
+            <button id="banUser" disabled>Ban User</button>
+            <input type="text" id="unbanUserInput" placeholder="Username to unban" disabled>
+            <button id="unbanUser" disabled>Unban User</button>
+            <p id="banStatus" style="color:red;"></p>
+        </div>
+    </div>
+    <script>
+        let currentTimezone = 'UTC';
+        let bannedUsers = [];
+        const adminPassword = '3912';
+        const currentUser = "user123"; // Example current username
+
+        // Load saved background from local storage
+        window.onload = function() {
+            const savedBackground = localStorage.getItem('backgroundImage');
+            if (savedBackground) {
+                document.body.style.backgroundImage = `url(${savedBackground})`;
+            }
+            setInterval(updateClock, 1000);
+            updateClock(); // Initialize clock on load
+        };
+
+        function updateClock() {
+            const now = new Date().toLocaleString("en-US", { timeZone: currentTimezone });
+            const timeString = new Date(now).toLocaleTimeString();
+            document.getElementById('clock').textContent = timeString;
+
+            // Check if the current user is banned
+            if (bannedUsers.includes(currentUser)) {
+                alert("You have been banned from using this site.");
+                document.body.innerHTML = ""; // Clear the content
+            }
+        }
+
+        function setBackground(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.body.style.backgroundImage = `url(${e.target.result})`;
+                    localStorage.setItem('backgroundImage', e.target.result); // Save to local storage
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function resetBackground() {
+            document.body.style.backgroundImage = ''; // Reset to default
+            localStorage.removeItem('backgroundImage'); // Remove from local storage
+        }
+
+        function showTab(tabId) {
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            const adminTab = document.getElementById('adminTab');
+            if (tabId === 'adminTab') {
+                adminTab.classList.add('active');
+                document.getElementById('adminPassword').value = '';
+                document.getElementById('banUserInput').disabled = true;
+                document.getElementById('unbanUserInput').disabled = true;
+                document.getElementById('banUser').disabled = true;
+                document.getElementById('unbanUser').disabled = true;
+                document.getElementById('banStatus').textContent = '';
+            } else {
+                document.getElementById(tabId).classList.add('active');
+            }
+        }
+
+        document.getElementById('adminPassword').addEventListener('input', function() {
+            if (this.value === adminPassword) {
+                document.getElementById('banUserInput').disabled = false;
+                document.getElementById('unbanUserInput').disabled = false;
+                document.getElementById('banUser').disabled = false;
+                document.getElementById('unbanUser').disabled = false;
+            } else {
+                document.getElementById('banUserInput').disabled = true;
+                document.getElementById('unbanUserInput').disabled = true;
+                document.getElementById('banUser').disabled = true;
+                document.getElementById('unbanUser').disabled = true;
+            }
+        });
+
+        document.getElementById('banUser').addEventListener('click', function() {
+            const username = document.getElementById('banUserInput').value;
+            if (username) {
+                bannedUsers.push(username);
+                document.getElementById('banStatus').textContent = `${username} has been banned.`;
+                document.getElementById('banUserInput').value = '';
+            }
+        });
+
+        document.getElementById('unbanUser').addEventListener('click', function() {
+            const username = document.getElementById('unbanUserInput').value;
+            if (username) {
+                bannedUsers = bannedUsers.filter(user => user !== username);
+                document.getElementById('banStatus').textContent = `${username} has been unbanned.`;
+                document.getElementById('unbanUserInput').value = '';
+            }
+        });
+
+        document.getElementById('backgroundInput').addEventListener('change', setBackground);
+        document.getElementById('resetBackground').addEventListener('click', resetBackground);
+        document.getElementById('timezoneSelect').addEventListener('change', function() {
+            currentTimezone = this.value;
+        });
+
+    </script>
+</body>
+</html>
 
