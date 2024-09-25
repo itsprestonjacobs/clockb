@@ -84,24 +84,26 @@
 
         <div id="adminTab" class="tab hidden">
             <input type="password" id="adminPassword" placeholder="Enter Admin Password">
-            <input type="text" id="ipInput" placeholder="IP to ban" disabled>
+            <input type="text" id="banUserInput" placeholder="Username to ban" disabled>
             <button id="banUser" disabled>Ban User</button>
+            <input type="text" id="unbanUserInput" placeholder="Username to unban" disabled>
+            <button id="unbanUser" disabled>Unban User</button>
             <p id="banStatus" style="color:red;"></p>
         </div>
     </div>
     <script>
         let currentTimezone = 'UTC';
-        let bannedIPs = [];
+        let bannedUsers = [];
         const adminPassword = '3912';
+        const currentUser = "user123"; // Example current username
 
         function updateClock() {
             const now = new Date().toLocaleString("en-US", { timeZone: currentTimezone });
             const timeString = new Date(now).toLocaleTimeString();
             document.getElementById('clock').textContent = timeString;
 
-            // Simulate user IP check (this is a placeholder)
-            const userIP = "192.168.0.1"; // Example user IP
-            if (bannedIPs.includes(userIP)) {
+            // Check if the current user is banned
+            if (bannedUsers.includes(currentUser)) {
                 alert("You have been banned from using this site.");
                 document.body.innerHTML = ""; // Clear the content
             }
@@ -132,8 +134,10 @@
             if (tabId === 'adminTab') {
                 adminTab.classList.add('active');
                 document.getElementById('adminPassword').value = '';
-                document.getElementById('ipInput').disabled = true;
+                document.getElementById('banUserInput').disabled = true;
+                document.getElementById('unbanUserInput').disabled = true;
                 document.getElementById('banUser').disabled = true;
+                document.getElementById('unbanUser').disabled = true;
                 document.getElementById('banStatus').textContent = '';
             } else {
                 document.getElementById(tabId).classList.add('active');
@@ -142,20 +146,33 @@
 
         document.getElementById('adminPassword').addEventListener('input', function() {
             if (this.value === adminPassword) {
-                document.getElementById('ipInput').disabled = false;
+                document.getElementById('banUserInput').disabled = false;
+                document.getElementById('unbanUserInput').disabled = false;
                 document.getElementById('banUser').disabled = false;
+                document.getElementById('unbanUser').disabled = false;
             } else {
-                document.getElementById('ipInput').disabled = true;
+                document.getElementById('banUserInput').disabled = true;
+                document.getElementById('unbanUserInput').disabled = true;
                 document.getElementById('banUser').disabled = true;
+                document.getElementById('unbanUser').disabled = true;
             }
         });
 
         document.getElementById('banUser').addEventListener('click', function() {
-            const ipAddress = document.getElementById('ipInput').value;
-            if (ipAddress) {
-                bannedIPs.push(ipAddress);
-                document.getElementById('banStatus').textContent = `${ipAddress} has been banned.`;
-                document.getElementById('ipInput').value = '';
+            const username = document.getElementById('banUserInput').value;
+            if (username) {
+                bannedUsers.push(username);
+                document.getElementById('banStatus').textContent = `${username} has been banned.`;
+                document.getElementById('banUserInput').value = '';
+            }
+        });
+
+        document.getElementById('unbanUser').addEventListener('click', function() {
+            const username = document.getElementById('unbanUserInput').value;
+            if (username) {
+                bannedUsers = bannedUsers.filter(user => user !== username);
+                document.getElementById('banStatus').textContent = `${username} has been unbanned.`;
+                document.getElementById('unbanUserInput').value = '';
             }
         });
 
