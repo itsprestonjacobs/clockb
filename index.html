@@ -90,6 +90,17 @@
             border-color: #4CAF50;
             box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
         }
+
+        /* Additional styles for a cohesive UI */
+        p {
+            color: #d9534f; /* Bootstrap danger color */
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
     </style>
 </head>
 <body>
@@ -98,7 +109,7 @@
             <h2>Login</h2>
             <input type="text" id="usernameInput" placeholder="Username">
             <button id="loginButton">Login</button>
-            <p id="loginStatus" style="color:red;"></p>
+            <p id="loginStatus"></p>
         </div>
 
         <div id="appTab" class="hidden">
@@ -133,10 +144,17 @@
                 <button id="banUser" disabled>Ban User</button>
                 <input type="text" id="unbanUserInput" placeholder="Username to unban" disabled>
                 <button id="unbanUser" disabled>Unban User</button>
-                <p id="banStatus" style="color:red;"></p>
+                <p id="banStatus"></p>
+                <button onclick="showTab('testingTab')">Testing Tab</button>
+            </div>
+
+            <div id="testingTab" class="tab hidden">
+                <h2>Testing Tab</h2>
+                <div id="bannedUsersClocks"></div>
             </div>
         </div>
     </div>
+
     <script>
         let currentTimezone = 'UTC';
         let bannedUsers = [];
@@ -209,6 +227,21 @@
                 tab.classList.remove('active');
             });
             document.getElementById(tabId).classList.add('active');
+
+            // Show banned users' clocks in testing tab
+            if (tabId === 'testingTab') {
+                displayBannedUsersClocks();
+            }
+        }
+
+        function displayBannedUsersClocks() {
+            const bannedClockContainer = document.getElementById('bannedUsersClocks');
+            bannedClockContainer.innerHTML = ''; // Clear previous content
+            bannedUsers.forEach(user => {
+                const clockDiv = document.createElement('div');
+                clockDiv.textContent = `${user}: ${new Date().toLocaleTimeString('en-US', { timeZone: currentTimezone })}`;
+                bannedClockContainer.appendChild(clockDiv);
+            });
         }
 
         document.getElementById('adminPassword').addEventListener('input', function() {
@@ -225,10 +258,8 @@
                 bannedUsers.push(username);
                 document.getElementById('banStatus').textContent = `${username} has been banned.`;
                 document.getElementById('banUserInput').value = '';
-            } else if (bannedUsers.includes(username)) {
-                document.getElementById('banStatus').textContent = `${username} is already banned.`;
             } else {
-                document.getElementById('banStatus').textContent = 'Please enter a valid username to ban.';
+                document.getElementById('banStatus').textContent = username ? `${username} is already banned.` : 'Please enter a valid username.';
             }
         });
 
@@ -238,15 +269,18 @@
                 bannedUsers = bannedUsers.filter(user => user !== username);
                 document.getElementById('banStatus').textContent = `${username} has been unbanned.`;
                 document.getElementById('unbanUserInput').value = '';
-            } else if (!bannedUsers.includes(username)) {
-                document.getElementById('banStatus').textContent = `${username} is not banned.`;
             } else {
-                document.getElementById('banStatus').textContent = 'Please enter a valid username to unban.';
+                document.getElementById('banStatus').textContent = username ? `${username} is not banned.` : 'Please enter a valid username to unban.';
             }
         });
 
         document.getElementById('timezoneSelect').addEventListener('change', function() {
             currentTimezone = this.value;
+        });
+
+        window.addEventListener('beforeunload', function() {
+            const timestamp = new Date().toISOString();
+            console.log(`User: ${currentUser}, Action: closed, Time: ${timestamp}`);
         });
     </script>
 </body>
