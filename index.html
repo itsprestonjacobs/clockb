@@ -91,7 +91,6 @@
             box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
         }
 
-        /* Additional styles for a cohesive UI */
         p {
             color: #d9534f; /* Bootstrap danger color */
         }
@@ -100,6 +99,11 @@
             display: flex;
             justify-content: center;
             flex-wrap: wrap;
+        }
+
+        #userDashboard {
+            margin-top: 20px;
+            text-align: left;
         }
     </style>
 </head>
@@ -146,6 +150,8 @@
                 <button id="unbanUser" disabled>Unban User</button>
                 <p id="banStatus"></p>
                 <button onclick="showTab('testingTab')">Testing Tab</button>
+                <button id="dashboardButton" class="hidden">User Dashboard</button>
+                <div id="userDashboard" class="hidden"></div>
             </div>
 
             <div id="testingTab" class="tab hidden">
@@ -160,6 +166,7 @@
         let bannedUsers = [];
         const adminPassword = '3912';
         let currentUser = '';
+        const onlineUsers = new Set(); // Set to keep track of online users
 
         window.onload = function() {
             const savedBackground = localStorage.getItem('backgroundImage');
@@ -169,6 +176,7 @@
             }
             currentUser = localStorage.getItem('currentUser');
             if (currentUser) {
+                onlineUsers.add(currentUser); // Add current user to online users
                 showApp();
             }
             setInterval(updateClock, 1000);
@@ -196,6 +204,7 @@
             const username = document.getElementById('usernameInput').value;
             if (username) {
                 currentUser = username;
+                onlineUsers.add(username); // Add to online users
                 localStorage.setItem('currentUser', username);
                 document.getElementById('loginStatus').textContent = '';
                 showApp();
@@ -232,6 +241,11 @@
             if (tabId === 'testingTab') {
                 displayBannedUsersClocks();
             }
+
+            // Show dashboard button only for admins
+            if (tabId === 'adminTab') {
+                document.getElementById('dashboardButton').classList.toggle('hidden', !document.getElementById('adminPassword').value === adminPassword);
+            }
         }
 
         function displayBannedUsersClocks() {
@@ -250,6 +264,7 @@
             document.getElementById('unbanUserInput').disabled = !isAdmin;
             document.getElementById('banUser').disabled = !isAdmin;
             document.getElementById('unbanUser').disabled = !isAdmin;
+            document.getElementById('dashboardButton').classList.toggle('hidden', !isAdmin);
         });
 
         document.getElementById('banUser').addEventListener('click', function() {
@@ -274,13 +289,23 @@
             }
         });
 
+        document.getElementById('dashboardButton').addEventListener('click', function() {
+            const userDashboard = document.getElementById('userDashboard');
+            userDashboard.innerHTML = '<h3>Online Users</h3>';
+            onlineUsers.forEach(user => {
+                const userDiv = document.createElement('div');
+                userDiv.textContent = `${user}: ${new Date().toLocaleTimeString('en-US', { timeZone: currentTimezone })}`;
+                userDashboard.appendChild(userDiv);
+            });
+            userDashboard.classList.toggle('hidden');
+        });
+
         document.getElementById('timezoneSelect').addEventListener('change', function() {
             currentTimezone = this.value;
         });
 
         window.addEventListener('beforeunload', function() {
-            const timestamp = new Date().toISOString();
-            console.log(`User: ${currentUser}, Action: closed, Time: ${timestamp}`);
+            onlineUsers.delete(currentUser); // Remove user from online on close
         });
     </script>
 </body>
