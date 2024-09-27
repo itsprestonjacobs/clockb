@@ -11,20 +11,18 @@
             align-items: center;
             height: 100vh;
             margin: 0;
-            background-color: #f0f0f0;
-            background-size: cover;
-            background-position: center;
+            background: linear-gradient(to right, #74ebd5, #acb6e5);
             font-family: 'Arial', sans-serif;
-            transition: background-image 0.5s;
+            transition: background 0.5s;
         }
 
         .container {
             text-align: center;
-            background: rgba(255, 255, 255, 0.8);
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-            width: 300px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+            width: 350px;
         }
 
         .clock {
@@ -46,11 +44,51 @@
         }
 
         button {
+            background-color: #4CAF50; /* Green */
+            border: none;
+            color: white;
+            padding: 10px 15px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
             margin: 5px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        input {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: calc(100% - 22px);
+            margin-bottom: 10px;
+        }
+
+        h2 {
+            color: #4CAF50;
+        }
+
+        .adminPanel {
+            background: #f9f9f9;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
         }
 
         .hidden {
             display: none;
+        }
+
+        input:focus {
+            border-color: #4CAF50;
+            box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
         }
     </style>
 </head>
@@ -88,7 +126,8 @@
                 </select>
             </div>
 
-            <div id="adminTab" class="tab hidden">
+            <div id="adminTab" class="tab hidden adminPanel">
+                <h2>Admin Panel</h2>
                 <input type="password" id="adminPassword" placeholder="Enter Admin Password">
                 <input type="text" id="banUserInput" placeholder="Username to ban" disabled>
                 <button id="banUser" disabled>Ban User</button>
@@ -102,35 +141,27 @@
         let currentTimezone = 'UTC';
         let bannedUsers = [];
         const adminPassword = '3912';
-        let currentUser = ''; // To store the current username
+        let currentUser = '';
 
-        // Load saved background from local storage
         window.onload = function() {
             const savedBackground = localStorage.getItem('backgroundImage');
             if (savedBackground) {
                 document.body.style.backgroundImage = `url(${savedBackground})`;
+                document.body.style.backgroundSize = 'cover';
             }
             currentUser = localStorage.getItem('currentUser');
             if (currentUser) {
                 showApp();
             }
-            logUserActivity("opened");
             setInterval(updateClock, 1000);
-            updateClock(); // Initialize clock on load
+            updateClock();
         };
-
-        // Log user activity
-        function logUserActivity(action) {
-            const timestamp = new Date().toISOString();
-            console.log(`User: ${currentUser}, Action: ${action}, Time: ${timestamp}`);
-        }
 
         function updateClock() {
             const now = new Date().toLocaleString("en-US", { timeZone: currentTimezone });
             const timeString = new Date(now).toLocaleTimeString();
             document.getElementById('clock').textContent = timeString;
 
-            // Check if the current user is banned
             if (bannedUsers.includes(currentUser)) {
                 alert("You have been banned from using this site.");
                 document.body.innerHTML = ""; // Clear the content
@@ -155,22 +186,23 @@
             }
         });
 
-        function setBackground(event) {
+        document.getElementById('backgroundInput').addEventListener('change', function(event) {
             const file = event.target.files[0];
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     document.body.style.backgroundImage = `url(${e.target.result})`;
-                    localStorage.setItem('backgroundImage', e.target.result); // Save to local storage
+                    document.body.style.backgroundSize = 'cover';
+                    localStorage.setItem('backgroundImage', e.target.result);
                 };
                 reader.readAsDataURL(file);
             }
-        }
+        });
 
-        function resetBackground() {
-            document.body.style.backgroundImage = ''; // Reset to default
-            localStorage.removeItem('backgroundImage'); // Remove from local storage
-        }
+        document.getElementById('resetBackground').addEventListener('click', function() {
+            document.body.style.backgroundImage = '';
+            localStorage.removeItem('backgroundImage');
+        });
 
         function showTab(tabId) {
             document.querySelectorAll('.tab').forEach(tab => {
@@ -180,46 +212,41 @@
         }
 
         document.getElementById('adminPassword').addEventListener('input', function() {
-            if (this.value === adminPassword) {
-                document.getElementById('banUserInput').disabled = false;
-                document.getElementById('unbanUserInput').disabled = false;
-                document.getElementById('banUser').disabled = false;
-                document.getElementById('unbanUser').disabled = false;
-            } else {
-                document.getElementById('banUserInput').disabled = true;
-                document.getElementById('unbanUserInput').disabled = true;
-                document.getElementById('banUser').disabled = true;
-                document.getElementById('unbanUser').disabled = true;
-            }
+            const isAdmin = this.value === adminPassword;
+            document.getElementById('banUserInput').disabled = !isAdmin;
+            document.getElementById('unbanUserInput').disabled = !isAdmin;
+            document.getElementById('banUser').disabled = !isAdmin;
+            document.getElementById('unbanUser').disabled = !isAdmin;
         });
 
         document.getElementById('banUser').addEventListener('click', function() {
-            const username = document.getElementById('banUserInput').value;
-            if (username) {
+            const username = document.getElementById('banUserInput').value.trim();
+            if (username && !bannedUsers.includes(username)) {
                 bannedUsers.push(username);
                 document.getElementById('banStatus').textContent = `${username} has been banned.`;
                 document.getElementById('banUserInput').value = '';
+            } else if (bannedUsers.includes(username)) {
+                document.getElementById('banStatus').textContent = `${username} is already banned.`;
+            } else {
+                document.getElementById('banStatus').textContent = 'Please enter a valid username to ban.';
             }
         });
 
         document.getElementById('unbanUser').addEventListener('click', function() {
-            const username = document.getElementById('unbanUserInput').value;
-            if (username) {
+            const username = document.getElementById('unbanUserInput').value.trim();
+            if (username && bannedUsers.includes(username)) {
                 bannedUsers = bannedUsers.filter(user => user !== username);
                 document.getElementById('banStatus').textContent = `${username} has been unbanned.`;
                 document.getElementById('unbanUserInput').value = '';
+            } else if (!bannedUsers.includes(username)) {
+                document.getElementById('banStatus').textContent = `${username} is not banned.`;
+            } else {
+                document.getElementById('banStatus').textContent = 'Please enter a valid username to unban.';
             }
         });
 
-        document.getElementById('backgroundInput').addEventListener('change', setBackground);
-        document.getElementById('resetBackground').addEventListener('click', resetBackground);
         document.getElementById('timezoneSelect').addEventListener('change', function() {
             currentTimezone = this.value;
-        });
-
-        // Log user activity when closing the tab
-        window.addEventListener('beforeunload', function() {
-            logUserActivity("closed");
         });
     </script>
 </body>
