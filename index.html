@@ -82,7 +82,7 @@
                 <button onclick="showTab('backgroundTab')">Change Background</button>
                 <button onclick="showTab('timezoneTab')">Change Time Zone</button>
                 <button id="adminButton" class="hidden">Admin Panel</button>
-                <button id="downloadButton">Download Code</button>
+                <button onclick="showTab('dashboardTab')">User Dashboard</button>
             </div>
             
             <div id="backgroundTab" class="tab active">
@@ -110,8 +110,15 @@
                 <input type="text" id="unbanUserInput" placeholder="Username to unban" disabled>
                 <button id="unbanUser" disabled>Unban User</button>
                 <p id="banStatus" style="color:red;"></p>
-                <button id="dashboardButton" class="hidden">User Dashboard</button>
-                <div id="userDashboard" class="hidden"></div>
+            </div>
+
+            <div id="dashboardTab" class="tab hidden">
+                <h2>User Dashboard</h2>
+                <h3>Online Users</h3>
+                <ul id="userList"></ul>
+                <h3>Banned Users</h3>
+                <ul id="bannedUserList"></ul>
+                <p id="currentTime"></p>
             </div>
         </div>
     </div>
@@ -161,6 +168,11 @@
             document.getElementById('loginTab').classList.add('hidden');
             document.getElementById('appTab').classList.remove('hidden');
             document.getElementById('clock').textContent = ""; // Reset clock display
+
+            // Show the admin button directly if the user is the admin
+            if (currentUser === 'admin') { // Change 'admin' to your admin username
+                document.getElementById('adminButton').classList.remove('hidden');
+            }
         }
 
         document.getElementById('loginButton').addEventListener('click', function() {
@@ -169,6 +181,7 @@
                 currentUser = username;
                 onlineUsers.add(username);
                 localStorage.setItem('currentUser', username);
+                updateOnlineUsers();
                 document.getElementById('loginStatus').textContent = '';
                 showApp();
             } else {
@@ -206,8 +219,12 @@
         function showTab(tabId) {
             document.querySelectorAll('.tab').forEach(tab => {
                 tab.classList.remove('active');
+                tab.classList.add('hidden');
             });
-            document.getElementById(tabId).classList.add('active');
+            document.getElementById(tabId).classList.remove('hidden');
+            if (tabId === 'dashboardTab') {
+                updateDashboard();
+            }
         }
 
         document.getElementById('adminPassword').addEventListener('input', function() {
@@ -216,7 +233,6 @@
             document.getElementById('unbanUserInput').disabled = !isAdmin;
             document.getElementById('banUser').disabled = !isAdmin;
             document.getElementById('unbanUser').disabled = !isAdmin;
-            document.getElementById('dashboardButton').classList.toggle('hidden', !isAdmin);
         });
 
         document.getElementById('banUser').addEventListener('click', function() {
@@ -225,6 +241,7 @@
                 bannedUsers.push(username);
                 document.getElementById('banStatus').textContent = `${username} has been banned.`;
                 document.getElementById('banUserInput').value = '';
+                updateBannedUsers();
             } else {
                 document.getElementById('banStatus').textContent = username ? `${username} is already banned.` : 'Please enter a valid username.';
             }
@@ -236,6 +253,7 @@
                 bannedUsers = bannedUsers.filter(user => user !== username);
                 document.getElementById('banStatus').textContent = `${username} has been unbanned.`;
                 document.getElementById('unbanUserInput').value = '';
+                updateBannedUsers();
             } else {
                 document.getElementById('banStatus').textContent = username ? `${username} is not banned.` : 'Please enter a valid username.';
             }
@@ -243,18 +261,45 @@
 
         document.getElementById('backgroundInput').addEventListener('change', setBackground);
         document.getElementById('resetBackground').addEventListener('click', resetBackground);
+        document.getElementById('timezoneSelect').addEventListener('change', function() {
+            currentTimezone = this.value;
+        });
 
-        // Listen for the 'P' key press to reveal admin button
-        document.addEventListener('keydown', function(event) {
-            if (event.key.toLowerCase() === 'p') {
-                const password = prompt("Enter admin password:");
-                if (password === adminPassword) {
-                    document.getElementById('adminButton').classList.remove('hidden');
-                } else {
-                    alert("Incorrect password.");
-                }
-            }
+        function updateOnlineUsers() {
+            localStorage.setItem('onlineUsers', JSON.stringify(Array.from(onlineUsers)));
+        }
+
+        function updateBannedUsers() {
+            localStorage.setItem('bannedUsers', JSON.stringify(bannedUsers));
+        }
+
+        function updateDashboard() {
+            const userList = document.getElementById('userList');
+            userList.innerHTML = '';
+            onlineUsers.forEach(user => {
+                const li = document.createElement('li');
+                li.textContent = user;
+                userList.appendChild(li);
+            });
+
+            const bannedUserList = document.getElementById('bannedUserList');
+            bannedUserList.innerHTML = '';
+            bannedUsers.forEach(user => {
+                const li = document.createElement('li');
+                li.textContent = user;
+                bannedUserList.appendChild(li);
+            });
+
+            document.getElementById('currentTime').textContent = `Last Updated Time: ${new Date().toLocaleTimeString()}`;
+        }
+
+        // Log user activity when closing the tab
+        window.addEventListener('beforeunload', function() {
+            onlineUsers.delete(currentUser);
+            updateOnlineUsers();
+            logUserActivity("closed");
         });
     </script>
 </body>
 </html>
+
