@@ -11,18 +11,18 @@
             align-items: center;
             height: 100vh;
             margin: 0;
-            background: linear-gradient(to right, #74ebd5, #acb6e5);
+            background: linear-gradient(135deg, #6e7f80, #d9d9d9);
             font-family: 'Arial', sans-serif;
-            transition: background 0.5s;
+            transition: background-image 0.5s;
         }
 
         .container {
             text-align: center;
             background: rgba(255, 255, 255, 0.9);
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
-            width: 350px;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            width: 300px;
         }
 
         .clock {
@@ -44,66 +44,26 @@
         }
 
         button {
-            background-color: #4CAF50; /* Green */
-            border: none;
-            color: white;
-            padding: 10px 15px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 16px;
             margin: 5px;
-            cursor: pointer;
+            padding: 10px;
+            border: none;
             border-radius: 5px;
-            transition: background-color 0.3s;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+            font-size: 1rem;
         }
 
         button:hover {
             background-color: #45a049;
         }
 
-        input {
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            width: calc(100% - 22px);
-            margin-bottom: 10px;
-        }
-
-        h2 {
-            color: #4CAF50;
-        }
-
-        .adminPanel {
-            background: #f9f9f9;
-            border: 1px solid #ccc;
-            border-radius: 10px;
-            padding: 15px;
-            margin-top: 15px;
-        }
-
         .hidden {
             display: none;
         }
 
-        input:focus {
-            border-color: #4CAF50;
-            box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
-        }
-
-        p {
-            color: #d9534f; /* Bootstrap danger color */
-        }
-
-        .button-container {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
         #userDashboard {
             margin-top: 20px;
-            text-align: left;
         }
     </style>
 </head>
@@ -113,7 +73,7 @@
             <h2>Login</h2>
             <input type="text" id="usernameInput" placeholder="Username">
             <button id="loginButton">Login</button>
-            <p id="loginStatus"></p>
+            <p id="loginStatus" style="color:red;"></p>
         </div>
 
         <div id="appTab" class="hidden">
@@ -121,7 +81,8 @@
             <div class="tabs">
                 <button onclick="showTab('backgroundTab')">Change Background</button>
                 <button onclick="showTab('timezoneTab')">Change Time Zone</button>
-                <button onclick="showTab('adminTab')">Admin Panel</button>
+                <button id="adminButton" class="hidden">Admin Panel</button>
+                <button id="downloadButton">Download Code</button>
             </div>
             
             <div id="backgroundTab" class="tab active">
@@ -141,22 +102,16 @@
                 </select>
             </div>
 
-            <div id="adminTab" class="tab hidden adminPanel">
+            <div id="adminTab" class="tab hidden">
                 <h2>Admin Panel</h2>
                 <input type="password" id="adminPassword" placeholder="Enter Admin Password">
                 <input type="text" id="banUserInput" placeholder="Username to ban" disabled>
                 <button id="banUser" disabled>Ban User</button>
                 <input type="text" id="unbanUserInput" placeholder="Username to unban" disabled>
                 <button id="unbanUser" disabled>Unban User</button>
-                <p id="banStatus"></p>
-                <button onclick="showTab('testingTab')">Testing Tab</button>
+                <p id="banStatus" style="color:red;"></p>
                 <button id="dashboardButton" class="hidden">User Dashboard</button>
                 <div id="userDashboard" class="hidden"></div>
-            </div>
-
-            <div id="testingTab" class="tab hidden">
-                <h2>Testing Tab</h2>
-                <div id="bannedUsersClocks"></div>
             </div>
         </div>
     </div>
@@ -164,30 +119,38 @@
     <script>
         let currentTimezone = 'UTC';
         let bannedUsers = [];
-        const adminPassword = '3912';
-        let currentUser = '';
-        const onlineUsers = new Set(); // Set to keep track of online users
+        const adminPassword = '3912'; // Set your admin password here
+        let currentUser = ''; // To store the current username
+        const onlineUsers = new Set(); // Track online users
 
+        // Load saved background from local storage
         window.onload = function() {
             const savedBackground = localStorage.getItem('backgroundImage');
             if (savedBackground) {
                 document.body.style.backgroundImage = `url(${savedBackground})`;
-                document.body.style.backgroundSize = 'cover';
             }
             currentUser = localStorage.getItem('currentUser');
             if (currentUser) {
-                onlineUsers.add(currentUser); // Add current user to online users
+                onlineUsers.add(currentUser);
                 showApp();
             }
+            logUserActivity("opened");
             setInterval(updateClock, 1000);
-            updateClock();
+            updateClock(); // Initialize clock on load
         };
+
+        // Log user activity
+        function logUserActivity(action) {
+            const timestamp = new Date().toISOString();
+            console.log(`User: ${currentUser}, Action: ${action}, Time: ${timestamp}`);
+        }
 
         function updateClock() {
             const now = new Date().toLocaleString("en-US", { timeZone: currentTimezone });
             const timeString = new Date(now).toLocaleTimeString();
             document.getElementById('clock').textContent = timeString;
 
+            // Check if the current user is banned
             if (bannedUsers.includes(currentUser)) {
                 alert("You have been banned from using this site.");
                 document.body.innerHTML = ""; // Clear the content
@@ -204,7 +167,7 @@
             const username = document.getElementById('usernameInput').value;
             if (username) {
                 currentUser = username;
-                onlineUsers.add(username); // Add to online users
+                onlineUsers.add(username);
                 localStorage.setItem('currentUser', username);
                 document.getElementById('loginStatus').textContent = '';
                 showApp();
@@ -213,49 +176,38 @@
             }
         });
 
-        document.getElementById('backgroundInput').addEventListener('change', function(event) {
+        document.getElementById('adminButton').addEventListener('click', function() {
+            const password = prompt("Enter admin password:");
+            if (password === adminPassword) {
+                document.getElementById('adminTab').classList.remove('hidden');
+                this.classList.add('hidden'); // Hide the Admin Panel button after clicking
+            } else {
+                alert("Incorrect password.");
+            }
+        });
+
+        function setBackground(event) {
             const file = event.target.files[0];
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     document.body.style.backgroundImage = `url(${e.target.result})`;
-                    document.body.style.backgroundSize = 'cover';
-                    localStorage.setItem('backgroundImage', e.target.result);
+                    localStorage.setItem('backgroundImage', e.target.result); // Save to local storage
                 };
                 reader.readAsDataURL(file);
             }
-        });
+        }
 
-        document.getElementById('resetBackground').addEventListener('click', function() {
-            document.body.style.backgroundImage = '';
-            localStorage.removeItem('backgroundImage');
-        });
+        function resetBackground() {
+            document.body.style.backgroundImage = ''; // Reset to default
+            localStorage.removeItem('backgroundImage'); // Remove from local storage
+        }
 
         function showTab(tabId) {
             document.querySelectorAll('.tab').forEach(tab => {
                 tab.classList.remove('active');
             });
             document.getElementById(tabId).classList.add('active');
-
-            // Show banned users' clocks in testing tab
-            if (tabId === 'testingTab') {
-                displayBannedUsersClocks();
-            }
-
-            // Show dashboard button only for admins
-            if (tabId === 'adminTab') {
-                document.getElementById('dashboardButton').classList.toggle('hidden', !document.getElementById('adminPassword').value === adminPassword);
-            }
-        }
-
-        function displayBannedUsersClocks() {
-            const bannedClockContainer = document.getElementById('bannedUsersClocks');
-            bannedClockContainer.innerHTML = ''; // Clear previous content
-            bannedUsers.forEach(user => {
-                const clockDiv = document.createElement('div');
-                clockDiv.textContent = `${user}: ${new Date().toLocaleTimeString('en-US', { timeZone: currentTimezone })}`;
-                bannedClockContainer.appendChild(clockDiv);
-            });
         }
 
         document.getElementById('adminPassword').addEventListener('input', function() {
@@ -285,27 +237,23 @@
                 document.getElementById('banStatus').textContent = `${username} has been unbanned.`;
                 document.getElementById('unbanUserInput').value = '';
             } else {
-                document.getElementById('banStatus').textContent = username ? `${username} is not banned.` : 'Please enter a valid username to unban.';
+                document.getElementById('banStatus').textContent = username ? `${username} is not banned.` : 'Please enter a valid username.';
             }
         });
 
-        document.getElementById('dashboardButton').addEventListener('click', function() {
-            const userDashboard = document.getElementById('userDashboard');
-            userDashboard.innerHTML = '<h3>Online Users</h3>';
-            onlineUsers.forEach(user => {
-                const userDiv = document.createElement('div');
-                userDiv.textContent = `${user}: ${new Date().toLocaleTimeString('en-US', { timeZone: currentTimezone })}`;
-                userDashboard.appendChild(userDiv);
-            });
-            userDashboard.classList.toggle('hidden');
-        });
+        document.getElementById('backgroundInput').addEventListener('change', setBackground);
+        document.getElementById('resetBackground').addEventListener('click', resetBackground);
 
-        document.getElementById('timezoneSelect').addEventListener('change', function() {
-            currentTimezone = this.value;
-        });
-
-        window.addEventListener('beforeunload', function() {
-            onlineUsers.delete(currentUser); // Remove user from online on close
+        // Listen for the 'P' key press to reveal admin button
+        document.addEventListener('keydown', function(event) {
+            if (event.key.toLowerCase() === 'p') {
+                const password = prompt("Enter admin password:");
+                if (password === adminPassword) {
+                    document.getElementById('adminButton').classList.remove('hidden');
+                } else {
+                    alert("Incorrect password.");
+                }
+            }
         });
     </script>
 </body>
