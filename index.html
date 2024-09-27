@@ -83,6 +83,7 @@
                 <button onclick="showTab('timezoneTab')">Change Time Zone</button>
                 <button id="adminButton" class="hidden">Admin Panel</button>
                 <button onclick="showTab('dashboardTab')">User Dashboard</button>
+                <button onclick="showTab('logsTab')">Logs</button>
             </div>
             
             <div id="backgroundTab" class="tab active">
@@ -120,15 +121,21 @@
                 <ul id="bannedUserList"></ul>
                 <p id="currentTime"></p>
             </div>
+
+            <div id="logsTab" class="tab hidden">
+                <h2>Activity Logs</h2>
+                <ul id="logList"></ul>
+            </div>
         </div>
     </div>
 
     <script>
         let currentTimezone = 'UTC';
         let bannedUsers = [];
-        const adminPassword = '3912'; // Set your admin password here
+        const adminPassword = '3912'; // Updated admin password
         let currentUser = ''; // To store the current username
         const onlineUsers = new Set(); // Track online users
+        const activityLogs = []; // Store activity logs
 
         // Load saved background from local storage
         window.onload = function() {
@@ -149,6 +156,7 @@
         // Log user activity
         function logUserActivity(action) {
             const timestamp = new Date().toISOString();
+            activityLogs.push(`User: ${currentUser}, Action: ${action}, Time: ${timestamp}`);
             console.log(`User: ${currentUser}, Action: ${action}, Time: ${timestamp}`);
         }
 
@@ -173,6 +181,7 @@
             if (currentUser === 'admin') { // Change 'admin' to your admin username
                 document.getElementById('adminButton').classList.remove('hidden');
             }
+            updateOnlineUsers();
         }
 
         document.getElementById('loginButton').addEventListener('click', function() {
@@ -181,7 +190,6 @@
                 currentUser = username;
                 onlineUsers.add(username);
                 localStorage.setItem('currentUser', username);
-                updateOnlineUsers();
                 document.getElementById('loginStatus').textContent = '';
                 showApp();
             } else {
@@ -218,12 +226,13 @@
 
         function showTab(tabId) {
             document.querySelectorAll('.tab').forEach(tab => {
-                tab.classList.remove('active');
                 tab.classList.add('hidden');
             });
             document.getElementById(tabId).classList.remove('hidden');
             if (tabId === 'dashboardTab') {
                 updateDashboard();
+            } else if (tabId === 'logsTab') {
+                updateLogs();
             }
         }
 
@@ -243,7 +252,7 @@
                 document.getElementById('banUserInput').value = '';
                 updateBannedUsers();
             } else {
-                document.getElementById('banStatus').textContent = username ? `${username} is already banned.` : 'Please enter a valid username.';
+                document.getElementById('banStatus').textContent = username ? `${username} is already banned.` : 'Please enter a username.';
             }
         });
 
@@ -255,51 +264,39 @@
                 document.getElementById('unbanUserInput').value = '';
                 updateBannedUsers();
             } else {
-                document.getElementById('banStatus').textContent = username ? `${username} is not banned.` : 'Please enter a valid username.';
+                document.getElementById('banStatus').textContent = username ? `${username} is not banned.` : 'Please enter a username.';
             }
         });
 
-        document.getElementById('backgroundInput').addEventListener('change', setBackground);
-        document.getElementById('resetBackground').addEventListener('click', resetBackground);
-        document.getElementById('timezoneSelect').addEventListener('change', function() {
-            currentTimezone = this.value;
-        });
-
-        function updateOnlineUsers() {
-            localStorage.setItem('onlineUsers', JSON.stringify(Array.from(onlineUsers)));
-        }
-
-        function updateBannedUsers() {
-            localStorage.setItem('bannedUsers', JSON.stringify(bannedUsers));
-        }
-
         function updateDashboard() {
             const userList = document.getElementById('userList');
+            const bannedUserList = document.getElementById('bannedUserList');
             userList.innerHTML = '';
+            bannedUserList.innerHTML = '';
             onlineUsers.forEach(user => {
                 const li = document.createElement('li');
                 li.textContent = user;
                 userList.appendChild(li);
             });
-
-            const bannedUserList = document.getElementById('bannedUserList');
-            bannedUserList.innerHTML = '';
             bannedUsers.forEach(user => {
                 const li = document.createElement('li');
                 li.textContent = user;
                 bannedUserList.appendChild(li);
             });
-
-            document.getElementById('currentTime').textContent = `Last Updated Time: ${new Date().toLocaleTimeString()}`;
+            document.getElementById('currentTime').textContent = `Current Time: ${new Date().toLocaleTimeString()}`;
         }
 
-        // Log user activity when closing the tab
-        window.addEventListener('beforeunload', function() {
-            onlineUsers.delete(currentUser);
-            updateOnlineUsers();
-            logUserActivity("closed");
-        });
+        function updateBannedUsers() {
+            document.getElementById('bannedUserList').innerHTML = bannedUsers.map(user => `<li>${user}</li>`).join('');
+        }
+
+        function updateLogs() {
+            const logList = document.getElementById('logList');
+            logList.innerHTML = activityLogs.map(log => `<li>${log}</li>`).join('');
+        }
+
+        document.getElementById('backgroundInput').addEventListener('change', setBackground);
+        document.getElementById('resetBackground').addEventListener('click', resetBackground);
     </script>
 </body>
 </html>
-
