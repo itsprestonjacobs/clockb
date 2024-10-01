@@ -3,128 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Path</title>
+    <title>YouTube Help Page</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
+            background-color: #f9f9f9;
+            color: #333;
         }
 
-        .tab {
-            overflow: hidden;
-            background-color: #f1f1f1;
-            margin: 20px 0;
+        h1, h2 {
+            color: #c4302b;
         }
 
-        .tab button {
-            background-color: #f1f1f1;
-            border: none;
-            outline: none;
-            cursor: pointer;
-            padding: 14px 16px;
-            transition: 0.3s;
-            display: inline-block;
-        }
-
-        .tab button:hover {
-            background-color: #ddd;
-        }
-
-        .tab button.active {
-            background-color: #ccc;
-        }
-
-        .tabcontent {
-            display: none;
+        .content {
             padding: 20px;
-            border: 1px solid #ccc;
+            max-width: 800px;
+            margin: auto;
         }
 
-        .tabcontent h2 {
-            margin-top: 0;
+        .tips {
+            margin: 20px 0;
+            padding: 10px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        a {
+            color: #c4302b;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
         }
     </style>
-    <script>
-        function openTab(evt, grade) {
-            const tabcontent = document.getElementsByClassName("tabcontent");
-            for (let i = 0; i < tabcontent.length; i++) {
-                tabcontent[i].style.display = "none";  
-            }
-            const tablinks = document.getElementsByClassName("tablinks");
-            for (let i = 0; i < tablinks.length; i++) {
-                tablinks[i].className = tablinks[i].className.replace(" active", "");
-            }
-            document.getElementById(grade).style.display = "block";  
-            evt.currentTarget.className += " active";
-        }
-    </script>
 </head>
 <body>
 
-<h1>Welcome to My Path</h1>
+<div class="content">
+    <h1>How to Create a YouTube Channel</h1>
+    <p>Welcome to the YouTube help page! Here are some steps and tips to get started on your journey to creating a successful YouTube channel.</p>
 
-<div class="tab">
-    <button class="tablinks" onclick="openTab(event, 'Grade1')">Grade 1</button>
-    <button class="tablinks" onclick="openTab(event, 'Grade2')">Grade 2</button>
-    <button class="tablinks" onclick="openTab(event, 'Grade3')">Grade 3</button>
-    <button class="tablinks" onclick="openTab(event, 'Grade4')">Grade 4</button>
-    <button class="tablinks" onclick="openTab(event, 'Grade5')">Grade 5</button>
-</div>
+    <h2>Steps to Create Your YouTube Channel</h2>
+    <ol>
+        <li><strong>Sign in to YouTube:</strong> Use your Google account to sign in.</li>
+        <li><strong>Create a Channel:</strong> Click on your profile icon and select "Your Channel". Follow the prompts to create your channel.</li>
+        <li><strong>Customize Your Channel:</strong> Add a profile picture, channel art, and description to make your channel unique.</li>
+        <li><strong>Create Content:</strong> Plan and record your videos using a camera or smartphone. Make sure to choose topics you're passionate about.</li>
+        <li><strong>Edit Your Videos:</strong> Use video editing software to enhance your videos. Add music, text, and effects to make them engaging.</li>
+        <li><strong>Upload Your Videos:</strong> Click on the camera icon with a "+" sign and follow the instructions to upload your content.</li>
+        <li><strong>Promote Your Channel:</strong> Share your videos on social media and engage with your audience in the comments.</li>
+    </ol>
 
-<div id="Grade1" class="tabcontent">
-    <h2>Grade 1 Resources</h2>
-    <h3>Math</h3>
-    <p>Counting worksheets, basic addition and subtraction exercises.</p>
-    <a href="#">Go to Grade 1 Math Resources</a>
-    
-    <h3>RLA</h3>
-    <p>Phonics worksheets, sight words, and reading comprehension activities.</p>
-    <a href="#">Go to Grade 1 RLA Resources</a>
-</div>
+    <div class="tips">
+        <h2>Tips for Success</h2>
+        <ul>
+            <li>Be consistent with your posting schedule.</li>
+            <li>Engage with your audience by responding to comments and asking for feedback.</li>
+            <li>Utilize SEO techniques by using relevant keywords in your video titles and descriptions.</li>
+            <li>Collaborate with other YouTubers to reach new audiences.</li>
+            <li>Analyze your performance using YouTube Analytics to understand what works best.</li>
+        </ul>
+    </div>
 
-<div id="Grade2" class="tabcontent" style="display:none;">
-    <h2>Grade 2 Resources</h2>
-    <h3>Math</h3>
-    <p>Basic multiplication and division worksheets, word problems.</p>
-    <a href="#">Go to Grade 2 Math Resources</a>
-    
-    <h3>RLA</h3>
-    <p>Story analysis, vocabulary building, and writing prompts.</p>
-    <a href="#">Go to Grade 2 RLA Resources</a>
-</div>
-
-<div id="Grade3" class="tabcontent" style="display:none;">
-    <h2>Grade 3 Resources</h2>
-    <h3>Math</h3>
-    <p>Fractions, geometry basics, and problem-solving exercises.</p>
-    <a href="#">Go to Grade 3 Math Resources</a>
-    
-    <h3>RLA</h3>
-    <p>Paragraph writing, reading fluency, and comprehension questions.</p>
-    <a href="#">Go to Grade 3 RLA Resources</a>
-</div>
-
-<div id="Grade4" class="tabcontent" style="display:none;">
-    <h2>Grade 4 Resources</h2>
-    <h3>Math</h3>
-    <p>Multi-digit multiplication, division, and introductory algebra.</p>
-    <a href="#">Go to Grade 4 Math Resources</a>
-    
-    <h3>RLA</h3>
-    <p>Essay writing, text analysis, and grammar exercises.</p>
-    <a href="#">Go to Grade 4 RLA Resources</a>
-</div>
-
-<div id="Grade5" class="tabcontent" style="display:none;">
-    <h2>Grade 5 Resources</h2>
-    <h3>Math</h3>
-    <p>Decimals, percentages, and advanced problem-solving.</p>
-    <a href="#">Go to Grade 5 Math Resources</a>
-    
-    <h3>RLA</h3>
-    <p>Research projects, advanced reading comprehension, and vocabulary.</p>
-    <a href="#">Go to Grade 5 RLA Resources</a>
+    <h2>Helpful Resources</h2>
+    <p>Here are some useful YouTube channels that provide great tips on video creation:</p>
+    <ul>
+        <li><a href="https://www.youtube.com/channel/UCL3E8QbGz3gP3b7n-7XsXcQ" target="_blank">Nick Nimmin</a> - Tips for YouTube growth.</li>
+        <li><a href="https://www.youtube.com/channel/UCW5YeuERMmlnqo4oq8vwUpg" target="_blank">Think Media</a> - Gear reviews and video strategies.</li>
+        <li><a href="https://www.youtube.com/user/filmriot" target="_blank">Film Riot</a> - Tips for filmmaking and video production.</li>
+    </ul>
 </div>
 
 </body>
